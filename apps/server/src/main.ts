@@ -41,7 +41,10 @@ import { Autumn } from 'autumn-js';
 import { appRouter } from './trpc';
 import { cors } from 'hono/cors';
 import { Hono } from 'hono';
+import { contextApi } from './routes/context';
 
+
+<<<<<<< HEAD
 export class DbRpcDO extends RpcTarget {
   constructor(
     private mainDo: ZeroDB,
@@ -49,6 +52,21 @@ export class DbRpcDO extends RpcTarget {
   ) {
     super();
   }
+=======
+const api = new Hono<HonoContext>()
+  .use(contextStorage())
+  .use('*', async (c, next) => {
+    console.log('✅ DATABASE_URL:', process.env.DATABASE_URL);
+    console.log('✅ HYPERDRIVE_CONNECTION_STRING:', process.env.HYPERDRIVE_CONNECTION_STRING);
+
+    const db = createDb(process.env.DATABASE_URL);
+    console.log("XXXXXXXXXXXXXXXXXXXX", process.env.HYPERDRIVE_CONNECTION_STRING)
+    c.set('db', db);
+    const auth = createAuth();
+    c.set('auth', auth);
+    const session = await auth.api.getSession({ headers: c.req.raw.headers });
+    c.set('sessionUser', session?.user);
+>>>>>>> 596b2690 (WIP: local custom changes before syncing with upstream)
 
   async findUser(): Promise<typeof user.$inferSelect | undefined> {
     return await this.mainDo.findUser(this.userId);
@@ -68,9 +86,44 @@ export class DbRpcDO extends RpcTarget {
     return await this.mainDo.deleteConnection(connectionId, this.userId);
   }
 
+<<<<<<< HEAD
   async findFirstConnection(): Promise<typeof connection.$inferSelect | undefined> {
     return await this.mainDo.findFirstConnection(this.userId);
   }
+=======
+    const autumn = new Autumn({ secretKey: env.AUTUMN_SECRET_KEY });
+    c.set('autumn', autumn);
+    await next();
+  })
+  .route('/ai', aiRouter)
+  .route('/autumn', autumnApi)
+  .route('/context', contextApi)
+  .on(['GET', 'POST'], '/auth/*', (c) => c.var.auth.handler(c.req.raw))
+  .use(
+    trpcServer({
+      endpoint: '/api/trpc',
+      router: appRouter,
+      createContext: (_, c) => {
+        return { c, sessionUser: c.var['sessionUser'], db: c.var['db'] };
+      },
+      allowMethodOverride: true,
+      onError: (opts) => {
+        console.error('Error in TRPC handler:', opts.error);
+      },
+    }),
+  )
+  .onError(async (err, c) => {
+    if (err instanceof Response) return err;
+    console.error('Error in Hono handler:', err);
+    return c.json(
+      {
+        error: 'Internal Server Error',
+        message: err instanceof Error ? err.message : 'Unknown error',
+      },
+      500,
+    );
+  });
+>>>>>>> 596b2690 (WIP: local custom changes before syncing with upstream)
 
   async findManyConnections(): Promise<(typeof connection.$inferSelect)[]> {
     return await this.mainDo.findManyConnections(this.userId);

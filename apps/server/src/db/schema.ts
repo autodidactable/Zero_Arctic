@@ -1,5 +1,6 @@
 import {
   pgTableCreator,
+  pgTable,
   text,
   timestamp,
   boolean,
@@ -8,6 +9,11 @@ import {
   primaryKey,
   unique,
   index,
+  serial,
+  varchar,
+  bigint,
+  uuid,
+  numeric
 } from 'drizzle-orm/pg-core';
 import { defaultUserSettings } from '../lib/schemas';
 
@@ -297,3 +303,39 @@ export const oauthConsent = createTable(
     index('oauth_consent_given_idx').on(t.consentGiven),
   ],
 );
+
+
+export const jwks = createTable('jwks', {
+  id: text('id').primaryKey(),
+  publicKey: text('public_key').notNull(),
+  privateKey: text('private_key').notNull(),
+  createdAt: timestamp('created_at').notNull(),
+});
+
+//adding these tables to generate deal-contacts tags while integrating with stacksync. - Zero_Arctic
+
+export const contacts = pgTable('contacts', {
+  id: bigint('id', { mode: 'number' }),
+  email: varchar('email', { length: 255 }),
+  firstname: varchar('firstname', { length: 255 }),
+  lastname: varchar('lastname', { length: 255 }),
+  jobtitle: varchar('jobtitle', { length: 255 }),
+  company: varchar('company', { length: 255 }),
+  stacksync_record_id_13rio8: uuid('stacksync_record_id_13rio8').primaryKey(),
+});
+
+export const deals = pgTable('deals', {
+  id: bigint('id', { mode: 'number' }),
+  dealname: varchar('dealname', { length: 255 }),
+  dealstage: varchar('dealstage', { length: 255 }),
+  amount: numeric('amount'),
+  closedate: timestamp('closedate'),
+  engagements_last_meeting_booked: timestamp('engagements_last_meeting_booked'),
+  stacksync_record_id_rr1kp8: uuid('stacksync_record_id_rr1kp8').primaryKey(),
+});
+
+export const associations_contact_deal = pgTable('associations_contact_deal', {
+  contact_id: bigint('contact_id', { mode: 'number' }),
+  deal_id: bigint('deal_id', { mode: 'number' }),
+  stacksync_record_id_hqf40t: uuid('stacksync_record_id_hqf40t').primaryKey(),
+});
