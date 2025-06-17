@@ -66,7 +66,6 @@ const cleanNameDisplay = (name?: string) => {
   return name.replace(/["<>]/g, '');
 };
 
-<<<<<<< HEAD
 // HTML escaping function to prevent XSS attacks
 const escapeHtml = (text: string): string => {
   if (!text) return text;
@@ -74,8 +73,6 @@ const escapeHtml = (text: string): string => {
   div.textContent = text;
   return div.innerHTML;
 };
-=======
->>>>>>> b3e6b7e1 (wip: local updates before merge from upstream)
 
 interface ThreadDisplayProps {
   threadParam?: any;
@@ -726,6 +723,18 @@ export function ThreadDisplay() {
   //       return () => clearTimeout(timer);
   //     }
   //   }, [emailData?.latest?.id, setMode, setActiveReplyId]);
+  /* // Automatically open Reply All composer when email thread is loaded
+  useEffect(() => {
+    if (emailData?.latest?.id) {
+      // Small delay to ensure other effects have completed
+      const timer = setTimeout(() => {
+        setMode('replyAll');
+        setActiveReplyId(emailData.latest!.id);
+      }, 50);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [emailData?.latest?.id, setMode, setActiveReplyId]); */
 
   // Removed conflicting useEffect that was clearing activeReplyId
 
@@ -1042,6 +1051,8 @@ useEffect(() => {
                 type="auto"
               >
                 <div className="pb-4">
+
+                {contextEmail && <ContextHeader email={contextEmail} />}
 
                   {(emailData.messages || []).map((message, index) => {
                     const isLastMessage = index === emailData.messages.length - 1;

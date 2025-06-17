@@ -42,7 +42,9 @@ import { appRouter } from './trpc';
 import { cors } from 'hono/cors';
 import { Hono } from 'hono';
 import { contextApi } from './routes/context';
+import dealStagesRoute from './routes/deal-stages';
 
+console.log('🧪 typeof createDb:', typeof createDb); // should print "function"
 
 <<<<<<< HEAD
 export class DbRpcDO extends RpcTarget {
@@ -98,20 +100,27 @@ const api = new Hono<HonoContext>()
   .route('/ai', aiRouter)
   .route('/autumn', autumnApi)
   .route('/context', contextApi)
+  .route('/deal-stages', dealStagesRoute)
   .on(['GET', 'POST'], '/auth/*', (c) => c.var.auth.handler(c.req.raw))
-  .use(
-    trpcServer({
-      endpoint: '/api/trpc',
-      router: appRouter,
-      createContext: (_, c) => {
-        return { c, sessionUser: c.var['sessionUser'], db: c.var['db'] };
-      },
-      allowMethodOverride: true,
-      onError: (opts) => {
-        console.error('Error in TRPC handler:', opts.error);
-      },
-    }),
+  .route(
+    '/trpc',
+    new Hono().use(
+      '*',
+      trpcServer({
+        endpoint: '/api/trpc',
+        router: appRouter,
+        createContext: (_, c) => {
+          return { c, sessionUser: c.var['sessionUser'], db: c.var['db'] };
+        },
+        allowMethodOverride: true,
+        onError: (opts) => {
+          console.error('Error in TRPC handler:', opts.error);
+        },
+      }),
+    )
   )
+  
+  
   .onError(async (err, c) => {
     if (err instanceof Response) return err;
     console.error('Error in Hono handler:', err);
