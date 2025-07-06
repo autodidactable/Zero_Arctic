@@ -43,6 +43,9 @@ import { cors } from 'hono/cors';
 import { Hono } from 'hono';
 import { contextApi } from './routes/context';
 import dealStagesRoute from './routes/deal-stages';
+import intelligenceRoute from './routes/threads/intelligence'
+import updateNotesRoute from './routes/deals/update-notes';
+
 
 console.log('🧪 typeof createDb:', typeof createDb); // should print "function"
 
@@ -97,10 +100,12 @@ const api = new Hono<HonoContext>()
     c.set('autumn', autumn);
     await next();
   })
+  .route('/deals/:id', updateNotesRoute)
   .route('/ai', aiRouter)
   .route('/autumn', autumnApi)
   .route('/context', contextApi)
   .route('/deal-stages', dealStagesRoute)
+  .route('/threads', intelligenceRoute)
   .on(['GET', 'POST'], '/auth/*', (c) => c.var.auth.handler(c.req.raw))
   .route(
     '/trpc',
